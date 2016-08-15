@@ -1,0 +1,139 @@
+how to set up a vm image
+
+http://slurm.schedmd.com/quickstart_admin.html
+http://wildflower.diablonet.net/~scaron/slurmsetup.html
+
+
+echo "slurm:x:2000:2000:slurm admin:/home/slurm:/bin/bash" >> /etc/passwd
+echo "slurm:x:2000:slurm" >> /etc/group
+pwconv
+
+
+apt-get install build-essential libtool
+apt-get install autoconf
+apt-get install libgtk2.0-dev
+apt-get install libmunge-dev libmunge2 munge
+
+
+#install munge
+
+
+
+#*************no start************************
+# Generate MUNGE key. 
+
+dd if=/dev/urandom bs=1 count=1024 > /etc/munge/munge.key
+chown munge:munge /etc/munge/munge.key
+chmod 400 /etc/munge/munge.key
+
+
+cp /etc/munge/munge.key /cluster/slurm-install/
+
+
+# Start MUNGE.
+
+/etc/init.d/munge start
+
+
+wget http://www.schedmd.com/download/archive/slurm-15.08.2.tar.bz2
+tar --bzip -x -f slurm*tar.bz2
+
+cp -r src slurm15082/
+
+cd slurm15082/
+
+autoreconf -i
+sh autogen.sh
+
+
+./configure --sysconfdir=/cluster/slurm-install/etc/
+
+make
+make install
+
+
+###INCASE IT FAILS AT MPI H5F
+diff -u /usr/include/H5public.h~ /usr/include/H5public.h
+--- /usr/include/H5public.h~    2013-01-09 19:23:52.000000000 -0800
++++ /usr/include/H5public.h     2013-06-07 10:13:51.089649327 -0700
+@@ -60,7 +60,7 @@
+ #ifdef H5_HAVE_PARALLEL
+ #   define MPICH_SKIP_MPICXX 1
+ #   define OMPI_SKIP_MPICXX 1
+-#   include <mpi.h>
++#   include <mpi/mpi.h>
+ #endif
+
+
+
+cp -r usr/local/slurm/ /cluster/slurm-install/scripts/
+cp usr/local/etc/slurm.conf /cluster/slurm-install/etc/
+
+# Run
+slurmctld -D -vvv
+
+#*************no stop************************
+
+---------------------------------------------
+COMPUTE NODES
+---------------------------------------------
+
+sudo apt-get install -y --force-yes build-essential libtool
+sudo apt-get install -y --force-yes autoconf
+sudo apt-get install -y --force-yes libgtk2.0-dev 
+
+sudo apt-get install -y --force-yes libmunge-dev libmunge2 munge
+
+
+
+UBUNTU:
+-----------------------------
+
+systemctl edit --system --full munge
+
+This command will perform the following actions:
+
+    Copy munge.service to /etc/systemd/system/munge.service
+    Invoke an editor on this new munge.service file
+    Reload the systemd configuration afterwards
+
+While in the editor, append either --syslog or --force to the ExecStart line:
+
+ExecStart=/usr/sbin/munged --syslog
+
+systemctl daemon-reload
+systemctl restart munge
+
+----------------------------
+
+sudo cp /cluster/slurm-install/munge.key  /etc/munge/munge.key
+sudo chown munge:munge /etc/munge/munge.key
+sudo chmod 400 /etc/munge/munge.key 
+
+
+
+sudo /etc/init.d/munge start
+
+echo "slurm:x:2000:2000:slurm admin:/home/slurm:/bin/bash" | sudo tee -a /etc/passwd
+echo "slurm:x:2000:slurm"  | sudo tee -a /etc/group
+sudo pwconv
+
+
+
+sudo chmod 777 /var/spool/
+
+sudo ./configure --sysconfdir=/cluster/slurm-install/etc/
+
+sudo make
+sudo make install
+
+sudo slurmd -D -vvv
+
+
+
+
+
+
+#################incase
+systemctl daemon-reload
+systemctl restart munge
