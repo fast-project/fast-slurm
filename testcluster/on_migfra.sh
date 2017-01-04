@@ -1,11 +1,10 @@
 #!/bin/bash
 
 
-
-for s in {1..3}
+for s in {1..4}
 do
-	ssh fast-0${s} 'sudo pkill migfra; sudo /cluster/fast/migration-framework/migfra --config /cluster/fast/migration-framework/migfra.conf &'
+	ssh -t fast-0$s 'sudo pkill migfra'
+	ssh -t fast-0$s 'sudo /cluster/node_setup.sh'
+
 done
-ls
-#scontrol update NodeName=fast-0[1-3]  State=UNDRAIN
-#scontrol update NodeName=fast-0[1-3]  State=RESUME
+

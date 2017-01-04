@@ -2,7 +2,7 @@
   <name>FLAG_VMNAME</name>
 <uuid>a1e40383-2dfb-47f7-9cf6-589fc9679aFLAG_UUID</uuid>
   <memory unit='KiB'>FLAG_MEMORY000</memory>
-  <vcpu placement='static'>FLAG_CORES</vcpu>
+  <vcpu placement='static' cpuset='FLAG_PIN'>FLAG_CORES</vcpu>
   <resource>
     <partition>/machine</partition>
   </resource>
@@ -18,6 +18,9 @@
   <cpu mode='custom' match='exact'>
     <model fallback='allow'>SandyBridge</model>
   </cpu>
+  <numatune>
+    <memory mode="strict"  placement="static" nodeset="FLAG_SOCKET" />
+  </numatune>
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
     <timer name='pit' tickpolicy='delay'/>

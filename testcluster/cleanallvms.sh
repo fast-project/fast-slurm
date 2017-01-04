@@ -1,5 +1,5 @@
 
-for s in {1..3}
+for s in {1..4}
 do
-	ssh -t fast-0$s '/cluster/cleanvms.sh'
+	ssh fast-0$s 'sudo /cluster/cleanvms.sh'
 done

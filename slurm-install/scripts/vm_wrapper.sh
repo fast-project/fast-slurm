@@ -17,9 +17,8 @@ export IFS=";"
 #send the individual vm scripts to a HIGH priority vmq called vmqp
 for (( i=1; i<=$min_nodes; i++ ))
 do
-	#--nodelist=$SLURM_NODELIST
-	echo "submitting vm_start.sh: $SLURM_NODELIST $min_cpus"
-	sbatch --partition=vmq --nodes=1-1 --ntasks=1 --ntasks-per-node=1 --time=$time_limit --mem=$pn_min_mem --cpus-per-task=$cpus_per_vm --gres=$gres  \
+	echo "submitting vm_start.sh: $SLURM_NODELIST $min_cpus --cpus-per-task=$cpus_per_vm"
+	sbatch --partition=vmq --nodes=1-1 --ntasks=1 --ntasks-per-node=1 --time=$time_limit --mem=$pn_min_mem --cpus-per-task=$cpus_per_vm --gres=$gres --nice=-9000 \
 			/cluster/slurm-install/scripts/vm_start.sh  $user_job_id $i $SLURM_JOB_NUM_NODES $SLURM_NODELIST
 done
 

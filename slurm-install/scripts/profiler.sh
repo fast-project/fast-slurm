@@ -4,15 +4,24 @@
 intelfolder=/cluster/intel/IntelPerformanceCounterMonitor-V2.11.1
 
 #contains the configure
-sinstall=/cluster/slurm-install/configs
+sinstall=/cluster/slurm-install/configs/KPIs
 
 #this specific node
 node=$(hostname)
 
-mcores=$sinstall/$node"_cores_main.txt"
-mmem=$sinstall/$node"_mem_main.txt"
+mcores=$sinstall/logs/$node"_cores_main.txt"
+mmem=$sinstall/logs/$node"_mem_main.txt"
 
-outf=$sinstall/$node"KPI.txt"
+outf=$sinstall/KPI$node".txt"
+
+rm $mcores
+rm $mmem
+rm $outf
+
+while [ -f $mcores ] || [-f $mmem ] || [ -f $outf ]
+do
+  sleep 1
+done
 
 rm -f $mmem $mcores
 
@@ -47,11 +56,17 @@ echo "Ready"
 
 while [ 1 -eq 1 ]; do
 
-sleep 10
+sleep 5
 
 
 cores=$(sed '1d' $mcores)
 mem=$(sed '1d' $mmem)
+#cores="$coresHead\n"$(cat $mcores | tail -n 5)
+#mem="$memHead\n"$(cat $mmem | tail -n 5)
+
+#echo -e "$mem"
+#echo -e "$cores" | awk -F';' -v col='Mem Read (MB/s)' 'NR==1{for(i=1;i<=NF;i++){if($i==col){c=i;break}} print $c} NR>1{print $c}'
+# tail -n 5 $mcores | awk  '{ print $NF-2 }'
 
 echo -e "$coresHead" > $mcores
 echo -e "$memHead" > $mmem
@@ -105,8 +120,12 @@ BW=$( echo -e "$mem" |  awk -F';' 'NR==1{for(i=1; i<=NF; i++) if ($i=="Read") {a
 
 
 #print all single values
-printf " s1IPC: $s1IPC \n s2IPC: $s2IPC \n s1L3: $s1L3 \n s2L3: $s2L3 \n"
-printf " s1L2: $s1L2 \n s2L2: $s2L2 \n s1BW: $s1BW \n s2BW: $s2BW \n BW: $BW \n"
+#printf " s1IPC: $s1IPC \n s2IPC: $s2IPC \n s1L3: $s1L3 \n s2L3: $s2L3 \n"
+#printf " s1L2: $s1L2 \n s2L2: $s2L2 \n s1BW: $s1BW \n s2BW: $s2BW \n BW: $BW \n"
+
+s1BW=${s1BW%.*}
+s2BW=${s2BW%.*}
+BW=${BW%.*}
 
 printf " s1IPC: $s1IPC \n s2IPC: $s2IPC \n s1L3: $s1L3 \n s2L3: $s2L3 \n" > $outf
 printf " s1L2: $s1L2 \n s2L2: $s2L2 \n s1BW: $s1BW \n s2BW: $s2BW \n BW: $BW \n" >> $outf
